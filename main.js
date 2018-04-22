@@ -2,7 +2,7 @@ main();
 
 async function main() {
     let app = await new Application(['usd', 'gbp', 'eur']);
-    let logger = await app.getLogger();
+    // let logger = await app.getLogger();
     let forexService = await app.getForexService();
 
     await forexService.loadExchangeRates();
