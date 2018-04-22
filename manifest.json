@@ -18,8 +18,10 @@
     "scripts": [
       "lib/module.js",
       "lib/forex.js",
+      "lib/highlighter.js",
       "lib/logger.js",
       "lib/null-logger.js",
+      "lib/application.js",
       "main.js"
     ]
   },
@@ -29,6 +31,9 @@
       "lib/module.js",
       "lib/forex.js",
       "lib/highlighter.js",
+      "lib/logger.js",
+      "lib/null-logger.js",
+      "lib/application.js",
       "front.js"
     ],
     "matches": [ "http://*/*", "file://*/*" ]
