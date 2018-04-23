@@ -40,13 +40,14 @@ manifest="{
       \"dist/bundle.js\",
       \"front.js\"
     ],
-    \"matches\": [ \"http://*/*\", \"file://*/*\" ]
+    \"matches\": [ \"http://*/*\", \"https://*/*\", \"file://*/*\" ]
   } ],
   \"permissions\": [
     \"activeTab\",
     \"tabs\",
     \"storage\",
     \"http://*/\",
+    \"https://*/\",
     \"file://*/\"
   ]
 }"

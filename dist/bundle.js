@@ -107,7 +107,7 @@ class Forex {
         this.currencies.push('pln');
         this.currencies.map(this.getISOcode.bind(this));
 
-        this.forexURL = 'http://api.nbp.pl/api/exchangerates/rates/a';
+        this.forexURL = 'https://api.nbp.pl/api/exchangerates/rates/a';
         this.cacheTimeStamp = Date.now();
         this.ttl = 4 * 3600;
         this.exchange = {};
