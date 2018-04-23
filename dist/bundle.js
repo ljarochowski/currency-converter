@@ -65,7 +65,6 @@ if (!(require instanceof Function)) {
 var reqBrowser = new RequireBrowser({
     getPath: (path) => {
         path = chrome.runtime.getURL(path);
-        console.log("path:" + path);
         return path;
     },
 });
@@ -74,14 +73,16 @@ function require(file) {
 }
 class Logger {
     constructor() {
-        return (...what) => {console.log(...what);}
+        return (...what) => {
+            console.log(...what);
+        };
     }
 }
 
 module.exports = new Logger();
 class NullLogger {
     constructor() {
-        return (...what) => {}
+        return (...what) => {};
     }
 }
 
@@ -90,10 +91,9 @@ class Forex {
     constructor(...currencies) {
         if (currencies instanceof Array
             && currencies.length === 1) {
-
             [...currencies] = currencies[0];
         }
-        
+
         if (currencies.length === 0) {
             throw Error('no currencies set');
         }
@@ -107,7 +107,7 @@ class Forex {
         this.currencies.push('pln');
         this.currencies.map(this.getISOcode.bind(this));
 
-        this.forexURL = 'http://api.nbp.pl/api/exchangerates/rates/a'
+        this.forexURL = 'http://api.nbp.pl/api/exchangerates/rates/a';
         this.cacheTimeStamp = Date.now();
         this.ttl = 4 * 3600;
         this.exchange = {};
@@ -133,8 +133,10 @@ class Forex {
         }
 
         for (let i in this.currencies) {
-            let currency = this.currencies[i];
-            this.exchange[currency] = await this.getRate(currency);
+            if (i in this.currencies) {
+                let currency = this.currencies[i];
+                this.exchange[currency] = await this.getRate(currency);
+            }
         }
         this.cacheTimeStamp = Date.now();
 
@@ -153,8 +155,8 @@ class Forex {
         to = this.getISOcode(to).toLowerCase();
         if (this.currencies.indexOf(from) === -1
             && this.currencies.indexOf(to) === -1) {
-
-            throw Error('no valid currency found, valid are: ' + this.currencies);
+            throw Error('no valid currency found, valid are: '
+                + this.currencies);
         }
 
         if (from === 'pln') {
@@ -180,7 +182,7 @@ class Forex {
         } else {
             rate = this.exchange[currency];
         }
-    
+
         return rate;
     }
 
@@ -209,11 +211,14 @@ class Highlighter {
     }
 
     async highlight(convert) {
-        const search = /([€£$])((?:\d+)(?:[.,](?:\d{2}))?)\b/g;
+        const search = /([€£$])((?:\d+[ .,]?)+(?:[.,](?:\d{2}))?)\b/g;
         let conversions = new Map();
 
         // first pass - search for tokens to replace
-        let matches, match, currency, amount;
+        let matches;
+        let match;
+        let currency;
+        let amount;
         while (matches = search.exec(this.node.innerHTML)) {
             [match, currency, amount] = matches;
             let converted = await convert.call({}, amount, currency);
@@ -222,7 +227,9 @@ class Highlighter {
 
         // second pass, substitution
         for (let [match, converted] of conversions) {
-            let xpath = document.evaluate('//text()[contains(., "'+match+'")]', this.node, null, XPathResult.UNORDERED_NODE_ITERATOR_TYPE, null);
+            let xpath = document.evaluate('//text()[contains(., "'+match+'")]',
+                this.node, null,
+                XPathResult.UNORDERED_NODE_ITERATOR_TYPE, null);
             let nodesToReplace = [];
             let xFound;
 
@@ -236,7 +243,8 @@ class Highlighter {
             }
 
             nodesToReplace.forEach((xElement) => {
-                xElement.innerHTML = xElement.innerHTML.replace(match, this.create(match, converted));
+                xElement.innerHTML =xElement.innerHTML.replace(
+                    match, this.create(match, converted));
             });
         }
     }
@@ -282,7 +290,8 @@ class HighlightedElement {
     }
 
     activate() {
-        let collection = Array.from(this.element.getElementsByClassName(ELEMENT_BOX_CLASS));
+        let collection = Array.from(
+            this.element.getElementsByClassName(ELEMENT_BOX_CLASS));
         let popup = new Popup(collection.pop());
 
         this.element.addEventListener('mouseover', popup.toggle.bind(popup));
@@ -290,7 +299,6 @@ class HighlightedElement {
         this.element.addEventListener('mousemove', (e) => {
             popup.moveTo(e.layerX, e.layerY);
         });
-
     }
 
     toDOMElement() {
@@ -305,14 +313,14 @@ class HighlightedElement {
 class Popup {
     constructor(text) {
         this.boxStyles = {
-            display: 'none',
-            position: 'absolute',
+            'display': 'none',
+            'position': 'absolute',
             'z-index': '100000',
-            background: 'white',
-            border: '1px solid #ddd',
+            'background': 'white',
+            'border': '1px solid #ddd',
             'border-radius': '5px',
             'box-shadow': '3px 3px #ddd',
-            padding: '10px',
+            'padding': '10px',
         };
 
         if (text instanceof HTMLElement) {
@@ -329,7 +337,9 @@ class Popup {
     getStyle(styles) {
         let styleAttribute = '';
         for (let i in styles) {
-            styleAttribute += `${i}:${styles[i]};`;
+            if (i in styles) {
+                styleAttribute += `${i}:${styles[i]};`;
+            }
         }
 
         return styleAttribute;
@@ -395,7 +405,7 @@ class Application {
 
         if (typeof Forex !== 'function') {
             fs = await require('./lib/forex.js');
-            this.forexService = new fs(this.currencies);
+            this.forexService = new Forex(this.currencies);
         } else {
             this.forexService = new Forex(this.currencies);
         }

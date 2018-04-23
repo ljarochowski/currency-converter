@@ -20,6 +20,14 @@ async function run(application, rates) {
     const HighlighterService = await application.getHighlighterService();
     const highlighter = new HighlighterService(document.body);
     await highlighter.highlight(async (value, currency) => {
+        if (/^[,.]$/.test(`${value}`.substr(-3, 1))) {
+            value = +(`${value}`.slice(0, -3).replace(/[ ,.]/g, '')
+                + '.' + `${value}`.slice(-2));
+        } else {
+            value = +(`${value}`.replace(/[ ,.]/g, ''));
+        }
+
+        console.log(value);
         return forexService.convert(value, currency, 'pln');
     });
 
