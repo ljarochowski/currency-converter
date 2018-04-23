@@ -27,7 +27,6 @@ async function run(application, rates) {
             value = +(`${value}`.replace(/[ ,.]/g, ''));
         }
 
-        console.log(value);
         return forexService.convert(value, currency, 'pln');
     });
 
