@@ -1,20 +1,17 @@
 main();
 
 async function main() {
-    const app = await new Application(['usd', 'gbp', 'eur']);
-    // const logger = await app.getLogger();
-
     chrome.runtime.onMessage.addListener(
         (request, sender, sendResponse) => {
             if (request.action === 'doCurrencyConversion') {
-                run(app, request.rates);
+                run(Application.unserialize(request.application));
             }
         }
     );
 }
 
-async function run(application, rates) {
-    const forexService = await application.getForexService(rates);
+async function run(application) {
+    const forexService = await application.getForexService();
     const highlighter = await application.getHighlighterService(document.body);
 
     await highlighter.highlight(async (value, currency) => {

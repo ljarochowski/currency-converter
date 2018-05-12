@@ -89,9 +89,10 @@ class NullLogger {
 module.exports = new NullLogger();
 class Forex {
     constructor(...currencies) {
-        if (currencies instanceof Array
-            && currencies.length === 1) {
+        if (currencies[0] instanceof Array) {
             [...currencies] = currencies[0];
+        } else {
+            [...currencies] = currencies;
         }
 
         if (currencies.length === 0) {
@@ -367,26 +368,29 @@ class Popup {
     }
 }
 module.exports = Highlighter;
+async function _loadClass(className, ...constructorArguments) {
+    let Fn;
+
+    if (typeof className !== 'function') {
+        const fileName = className.name
+            .replace(/([a-z])([A-Z])/g, '$1-$2')
+            .toLowerCase();
+        Fn = await require(`./lib/${fileName}.js`);
+    } else {
+        Fn = className;
+    }
+
+    return new Fn(...constructorArguments);
+}
+
 class Application {
-    constructor(currencies, options = {}) {
+    constructor(currencies, rates, options = {}) {
         this.options = options;
         this.currencies = currencies;
+        this.rates = rates;
         this.logger = {};
         this.forexService = {};
         this.highlighterService = {};
-    }
-
-    async _loadClass(className, ...constructorArguments) {
-        let fn;
-        if (typeof window[className] !== 'function') {
-            console.log(className);
-            fn = await require(`./lib/${className.toLowerCase()}.js`);
-        } else {
-            fn = window[className];
-        }
-        console.log(fn, constructorArguments);
-
-        return new fn(constructorArguments);
     }
 
     async getLogger() {
@@ -395,36 +399,24 @@ class Application {
         }
 
         if (this.options.debug === true) {
-            if (typeof Logger !== 'function') {
-                this.logger = await require('./lib/logger.js');
-            } else {
-                this.logger = new Logger();
-            }
+            this.logger = await _loadClass(Logger);
         } else {
-            if (typeof NullLogger !== 'function') {
-                this.logger = await require('./lib/null-logger.js');
-            } else {
-                this.logger = new NullLogger();
-            }
+            this.logger = await _loadClass(NullLogger);
         }
 
         return this.logger;
     }
 
-    async getForexService(rates) {
+    async getForexService() {
         if (this.forexService instanceof Forex) {
             return this.forexService;
         }
 
-        let ForexServiceFn;
-        if (typeof Forex !== 'function') {
-            ForexServiceFn = await require('./lib/forex.js');
-        } else {
-            ForexServiceFn = Forex;
-        }
-        this.forexService = new ForexServiceFn(this.currencies);
+        this.forexService = await _loadClass(Forex, this.currencies);
 
-        await this.forexService.loadExchangeRates(rates);
+        if (this.rates !== null) {
+            await this.forexService.loadExchangeRates(this.rates);
+        }
 
         return this.forexService;
     }
@@ -439,16 +431,21 @@ class Application {
                 ${typeof domElement} provided instead`);
         }
 
-        let HighlighterServiceFn;
-        if (typeof Highlighter !== 'function') {
-            HighlighterServiceFn = await require('./lib/highlighter.js');
-        } else {
-            HighlighterServiceFn = Highlighter;
-        }
-
-        this.highlighterService = new HighlighterServiceFn(domElement);
+        this.highlighterService = await _loadClass(Highlighter, domElement);
 
         return this.highlighterService;
+    }
+
+    async serialize() {
+        return Object.freeze({
+            rates: (await this.getForexService()).getRates(),
+            options: this.options,
+            currencies: this.currencies,
+        });
+    }
+
+    static unserialize(data) {
+        return new Application(data.currencies, data.rates, data.options);
     }
 }
 
