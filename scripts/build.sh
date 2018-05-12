@@ -47,7 +47,5 @@ npx webpack
 
 echo $manifest > dist/manifest.json
 
-# cp front.js dist/
-# cp main.js dist/
 cp LICENSE dist/
 cp -r icons dist/icons
