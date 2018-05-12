@@ -1,13 +1,4 @@
 #!/bin/bash
-modules="
-module
-require-chrome
-logger
-null-logger
-forex
-highlighter
-application
-"
 name="Currency Converter"
 description="Get prices in your local currency (currently only PLN to GBP, EUR and USD are supported"
 version="0.1"
@@ -30,15 +21,15 @@ manifest="{
   },
   \"background\": {
     \"scripts\": [
-      \"dist/bundle.js\",
-      \"main.js\"
+      \"lib.bundle.js\",
+      \"main.bundle.js\"
     ]
   },
   \"content_scripts\": [ {
     \"all_frames\": true,
     \"js\": [
-      \"dist/bundle.js\",
-      \"front.js\"
+      \"lib.bundle.js\",
+      \"front.bundle.js\"
     ],
     \"matches\": [ \"http://*/*\", \"https://*/*\", \"file://*/*\" ]
   } ],
@@ -52,9 +43,11 @@ manifest="{
   ]
 }"
 
-echo '' > dist/bundle.js;
-for i in $modules; do 
-    cat lib/$i.js >> dist/bundle.js; 
-done
+npx webpack
 
-echo $manifest > manifest.json
+echo $manifest > dist/manifest.json
+
+# cp front.js dist/
+# cp main.js dist/
+cp LICENSE dist/
+cp -r icons dist/icons

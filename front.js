@@ -1,3 +1,4 @@
+let Application = require('./lib/application.js');
 main();
 
 async function main() {

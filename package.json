@@ -2,13 +2,13 @@
   "name": "currency-convert",
   "version": "0.1.0",
   "description": "Currency Conversion via NBP API, chrome extension",
-  "main": "main.js",
+  "private": true,
   "directories": {
     "lib": "lib",
     "test": "test"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "mocha",
     "bundle": "./scripts/bundle.sh"
   },
   "repository": {
@@ -23,6 +23,9 @@
   "homepage": "https://github.com/ljarochowski/currency-converter#readme",
   "devDependencies": {
     "eslint": "^4.19.1",
-    "eslint-config-google": "^0.9.1"
+    "eslint-config-google": "^0.9.1",
+    "mocha": "^5.1.1",
+    "webpack": "^4.8.2",
+    "webpack-cli": "^2.1.3"
   }
 }
