@@ -14,11 +14,9 @@ async function main() {
 }
 
 async function run(application, rates) {
-    const forexService = await application.getForexService();
-    await forexService.loadExchangeRates(rates);
+    const forexService = await application.getForexService(rates);
+    const highlighter = await application.getHighlighterService(document.body);
 
-    const HighlighterService = await application.getHighlighterService();
-    const highlighter = new HighlighterService(document.body);
     await highlighter.highlight(async (value, currency) => {
         if (/^[,.]$/.test(`${value}`.substr(-3, 1))) {
             value = +(`${value}`.slice(0, -3).replace(/[ ,.]/g, '')
