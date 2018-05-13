@@ -1,53 +1,57 @@
-describe('Application test suite', function() {
-    describe('#getLogger', function() {
-        it('should return NullLogger if debug is not set', async function() {
-            const app = new Application();
-            const logger = await app.getLogger();
-            assert(logger instanceof NullLogger);
-        });
-        it('should return Logger if debug is set', async function() {
-            const app = new Application(['eur'], null, {debug: true});
-            const logger = await app.getLogger();
-            assert(logger instanceof Logger);
-        });
-        it(`NullLogger once set shouldn't be changed
-            in any circumstances`, async function() {
-                const app = new Application();
-                const logger = await app.getLogger();
-                app.options.debug = true;
+describe('Application test suite', () => {
+    let app;
+    beforeEach(async () => {
+        app = new Application(['eur']);
+    });
+    describe('#getLogger', () => {
+        let logger;
+        describe('#Logger', () => {
+            beforeEach(async () => {
+                logger = await app.getLogger();
+            });
+            it('should return NullLogger if debug is not set', async () => {
+                assert(logger instanceof NullLogger);
+            });
+            it(`NullLogger once set shouldn't be changed
+                in any circumstances`, async () => {
+                    app.options.debug = true;
+                    const logger2 = await app.getLogger();
+                    assert(logger2 instanceof NullLogger);
+                    assert(logger instanceof NullLogger);
+            });
+            it('should return singleton instance of NullLogger', async () => {
+                const mark = Math.random();
+                logger.__mark = mark;
                 const logger2 = await app.getLogger();
-                assert(logger2 instanceof NullLogger
-                    && logger instanceof NullLogger);
+                assert.equal(logger2.__mark, mark);
+            });
         });
-        it('should return singleton instance of NullLogger', async function() {
-            const app = new Application();
-            const logger = await app.getLogger();
-            const mark = Math.random();
-            logger.__mark = mark;
-            const logger2 = await app.getLogger();
-            assert.equal(logger2.__mark, mark);
-        });
-        it(`Logger once set shouldn't be changed
-            in any circumstances`, async function() {
-                const app = new Application(['eur'], null, {debug: true});
-                const logger = await app.getLogger();
-                app.options.debug = true;
+        describe('#NullLogger', () => {
+            beforeEach(async () => {
+                app = new Application(['eur'], null, {debug: true});
+                logger = await app.getLogger();
+            });
+            it('should return Logger if debug is set', async () => {
+                assert(logger instanceof Logger);
+            });
+            it(`Logger once set shouldn't be changed
+                in any circumstances`, async () => {
+                    app.options.debug = true;
+                    const logger2 = await app.getLogger();
+                    assert(logger2 instanceof Logger);
+                    assert(logger instanceof Logger);
+            });
+            it('should return singleton instance of Logger', async () => {
+                const mark = Math.random();
+                logger.__mark = mark;
                 const logger2 = await app.getLogger();
-                assert(logger2 instanceof Logger
-                    && logger instanceof Logger);
-        });
-        it('should return singleton instance of Logger', async function() {
-            const app = new Application(['eur'], null, {debug: true});
-            const logger = await app.getLogger();
-            const mark = Math.random();
-            logger.__mark = mark;
-            const logger2 = await app.getLogger();
-            assert.equal(logger2.__mark, mark);
+                assert.equal(logger2.__mark, mark);
+            });
         });
     });
-    describe('#getForexService', function() {
-        it('should return singleton instance of Forex', async function() {
-            const app = new Application(['eur']);
+    describe('#getForexService', () => {
+        it('should return singleton instance of Forex', async () => {
+            // const app = new Application(['eur']);
             const forex = await app.getForexService();
             const mark = Math.random();
             forex.__mark = mark;
@@ -55,9 +59,9 @@ describe('Application test suite', function() {
             assert.equal(forex2.__mark, mark);
         });
     });
-    describe('#getHighlighterService', function() {
-        it('should return singleton instance of Highlighter', async function() {
-            const app = new Application(['eur']);
+    describe('#getHighlighterService', () => {
+        it('should return singleton instance of Highlighter', async () => {
+            // const app = new Application(['eur']);
             const highlighter = await app.getHighlighterService();
             const mark = Math.random();
             highlighter.__mark = mark;
@@ -65,22 +69,43 @@ describe('Application test suite', function() {
             assert.equal(highlighter2.__mark, mark);
         });
     });
-    describe('#serialize', function() {
-        it('should contain currencies set', async function() {
-            const app = new Application(['eur']);
-            assert.deepEqual((await app.serialize()).currencies, ['eur']);
+    describe('#serialize', () => {
+        let rate;
+        let options;
+        let serialized;
+        describe('#known currencies', () => {
+            beforeEach(async () => {
+                rate = 10 * Math.random();
+                options = {debug: true};
+                app = new Application(['eur'], {eur: rate}, options);
+                serialized = await app.serialize();
+            });
+            it('should contain currencies set', async () => {
+                assert.deepEqual((await app.serialize()).currencies, ['eur']);
+            });
+            it('should contain any rates previously set', async () => {
+                assert.deepEqual((await app.serialize()).rates, {eur: rate});
+            });
+            it('should contain any options previously set', async () => {
+                assert.deepEqual((await app.serialize()).options, options);
+            });
         });
-        it('should contain any rates previously set', async function() {
-            const rate = 10 * Math.random();
-            const app = new Application(['eur'], {eur: rate});
-            assert.deepEqual((await app.serialize()).rates, {eur: rate});
+        describe('#unknown currencies', () => {
+            beforeEach(async () => {
+                app = new Application(['xyz'], null, null);
+                serialized = await app.serialize();
+            });
+            it(`should serialize rates to empty object
+                if unknown currencies given`,
+                async () => {
+                    assert.deepEqual(serialized.rates, {});
+            });
+            it('should serialize options to empty object if none given',
+                async () => {
+                    assert.deepEqual(serialized.options, {});
+            });
         });
-        it('should contain any options previously set', async function() {
-            const options = {debug: true};
-            const app = new Application(['eur'], null, options);
-            assert.deepEqual((await app.serialize()).options, options);
-        });
-        it('should throw an error when no currencies given', async function() {
+        it('should throw an error when no currencies given', async () => {
             const app = new Application(null, null, null);
             try {
                 await app.serialize();
@@ -88,40 +113,28 @@ describe('Application test suite', function() {
             } catch (err) {
             }
         });
-        it('should serialize rates to empty object if unknown currencies given',
-            async function() {
-                const app = new Application(['xyz'], null, null);
-                const serialized = await app.serialize();
-                assert.deepEqual(serialized.rates, {});
-        });
-        it('should serialize options to empty object if none given',
-            async function() {
-                const app = new Application(['xyz'], null, null);
-                const serialized = await app.serialize();
-                assert.deepEqual(serialized.options, {});
-        });
     });
-    describe('#unserialize', function() {
-        it('should contain currencies set', async function() {
-            const app = new Application(['xyz']);
-            const serialized = await app.serialize();
-            const app2 = Application.unserialize(serialized);
+    describe('#unserialize', () => {
+        let rate;
+        let options;
+        let app2;
+        let serialized;
+        beforeEach(async () => {
+            rate = 10 * Math.random();
+            options = {__rand: Math.random()};
+            app = new Application(['xyz'], {xyz: rate}, options);
+            serialized = await app.serialize();
+            app2 = Application.unserialize(serialized);
+        });
+        it('should contain currencies set', async () => {
             assert.deepEqual(app.currencies, app2.currencies);
         });
-        it('should contain any rates previously set', async function() {
-            const rate = 10 * Math.random();
-            const app = new Application(['xyz'], {xyz: rate});
-            const serialized = await app.serialize();
-            const app2 = Application.unserialize(serialized);
+        it('should contain any rates previously set', async () => {
             assert.deepEqual(app.rates, app2.rates);
             assert.deepEqual(app.rates, {xyz: rate});
             assert.deepEqual(app2.rates, {xyz: rate});
         });
-        it('should contain any options previously set', async function() {
-            const options = {__rand: Math.random()};
-            const app = new Application(['xyz'], null, options);
-            const serialized = await app.serialize();
-            const app2 = Application.unserialize(serialized);
+        it('should contain any options previously set', async () => {
             assert.deepEqual(app.options, app2.options);
             assert.deepEqual(app.options, options);
             assert.deepEqual(app2.options, options);
