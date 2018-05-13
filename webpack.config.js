@@ -4,7 +4,6 @@ module.exports = {
   entry: {
       main: './main.js',
       front: './front.js',
-      lib: './lib/application.js',
   },
   output: {
     filename: '[name].bundle.js',

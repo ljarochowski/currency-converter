@@ -21,14 +21,12 @@ manifest="{
   },
   \"background\": {
     \"scripts\": [
-      \"lib.bundle.js\",
       \"main.bundle.js\"
     ]
   },
   \"content_scripts\": [ {
     \"all_frames\": true,
     \"js\": [
-      \"lib.bundle.js\",
       \"front.bundle.js\"
     ],
     \"matches\": [ \"http://*/*\", \"https://*/*\", \"file://*/*\" ]
