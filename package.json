@@ -26,7 +26,8 @@
     "eslint-config-google": "^0.9.1",
     "jsdom": "^11.10.0",
     "mocha": "^5.1.1",
-    "node-fetch": "^2.1.2",
+    "cross-fetch": "^2.2.0",
+    "sinon": "^5.0.7",
     "webpack": "^4.8.2",
     "webpack-cli": "^2.1.3"
   },

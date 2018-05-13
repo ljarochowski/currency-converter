@@ -1,3 +1,8 @@
+global.Application = require('../lib/application.js');
+global.NullLogger = require('../lib/null-logger.js');
+global.Logger = require('../lib/logger.js');
+global.Forex = require('../lib/forex.js');
+
 describe('Application test suite', () => {
     let app;
     beforeEach(async () => {
@@ -51,7 +56,6 @@ describe('Application test suite', () => {
     });
     describe('#getForexService', () => {
         it('should return singleton instance of Forex', async () => {
-            // const app = new Application(['eur']);
             const forex = await app.getForexService();
             const mark = Math.random();
             forex.__mark = mark;
@@ -61,7 +65,6 @@ describe('Application test suite', () => {
     });
     describe('#getHighlighterService', () => {
         it('should return singleton instance of Highlighter', async () => {
-            // const app = new Application(['eur']);
             const highlighter = await app.getHighlighterService();
             const mark = Math.random();
             highlighter.__mark = mark;
@@ -95,10 +98,10 @@ describe('Application test suite', () => {
                 app = new Application(['xyz'], null, null);
                 serialized = await app.serialize();
             });
-            it(`should serialize rates to empty object
-                if unknown currencies given`,
+            it(`should serialize rates to an object
+                containing null values for each unknown currency`,
                 async () => {
-                    assert.deepEqual(serialized.rates, {});
+                    assert.deepEqual(serialized.rates, {xyz: null});
             });
             it('should serialize options to empty object if none given',
                 async () => {
