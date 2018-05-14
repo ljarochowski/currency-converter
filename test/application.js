@@ -1,7 +1,6 @@
-global.Application = require('../lib/application.js');
-global.NullLogger = require('../lib/null-logger.js');
-global.Logger = require('../lib/logger.js');
-global.Forex = require('../lib/forex.js');
+const Application = require('../lib/application.js');
+const NullLogger = require('../lib/null-logger.js');
+const Logger = require('../lib/logger.js');
 
 describe('Application test suite', () => {
     let app;
