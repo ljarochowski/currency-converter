@@ -55,6 +55,8 @@ describe('Application test suite', () => {
     });
     describe('#getForexService', () => {
         it('should return singleton instance of Forex', async () => {
+            // prevent downloading currencies, we don't need them
+            sinon.stub(app, '_loadExchangeRates');
             const forex = await app.getForexService();
             const mark = Math.random();
             forex.__mark = mark;

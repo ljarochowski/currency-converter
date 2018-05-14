@@ -1,4 +1,10 @@
 const {Forex, CachedForex} = require('../lib/forex.js');
+const ForexRepositoryMock = class {
+    async getRate(currency) {
+        return ['eur', 'usd', 'gbp', 'pln'].indexOf(currency) === -1?
+            null : Math.round(10 * Math.random(), 2) / 10;
+    }
+};
 
 describe('Forex test suite', () => {
     const currencies = ['eur', 'usd', 'gbp', 'pln', 'xyz'];
@@ -6,11 +12,12 @@ describe('Forex test suite', () => {
         const Forex = Fx;
         describe('#constructor', () => {
             it('should accept array of currencies', () => {
-                const forexService = new Forex(currencies);
+                const forexService = new Forex(new ForexRepositoryMock(),
+                    currencies);
                 assert.deepEqual(forexService.currencies, currencies);
             });
             it('should accept a list of currencies', () => {
-                const forexService = new Forex(
+                const forexService = new Forex(new ForexRepositoryMock(),
                     currencies[0],
                     currencies[1],
                     currencies[2],
@@ -21,26 +28,28 @@ describe('Forex test suite', () => {
             });
             it('should throw error if no currencies are given', () => {
                 try {
-                    new Forex();
+                    new Forex(new ForexRepositoryMock(), );
                     assert.fail('Error expected, but none received');
                 } catch (error) {
                 }
             });
             it('should accept eur and usd and gbp and pln symbols', () => {
                 const symbols = ['€', '$', '£', 'zł', 'XYZ'];
-                const forexService = new Forex(symbols);
+                const forexService = new Forex(new ForexRepositoryMock(),
+                    symbols);
                 assert.deepEqual(forexService.currencies, currencies);
             });
             it('should be case insensitive when recognizing currencies', () => {
                 const symbols = ['€', 'USD', '£', 'zŁ', 'XYZ'];
-                const forexService = new Forex(symbols);
+                const forexService = new Forex(new ForexRepositoryMock(),
+                    symbols);
                 assert.deepEqual(forexService.currencies, currencies);
             });
         });
         describe('#loadExchangeRates', () => {
             let forexService;
             beforeEach(() => {
-                forexService = new Forex(currencies);
+                forexService = new Forex(new ForexRepositoryMock(), currencies);
             });
             it('should have exchange rates only for currencies defined',
                 async () => {
@@ -59,7 +68,7 @@ describe('Forex test suite', () => {
         describe('#getConversionRate', () => {
             let forexService;
             beforeEach(() => {
-                forexService = new Forex(currencies);
+                forexService = new Forex(new ForexRepositoryMock(), currencies);
             });
             it('should return 1 if exchanging the same currency', async () => {
                 assert(forexService.getConversionRate('usd', 'usd'), 1);
@@ -94,7 +103,7 @@ describe('Forex test suite', () => {
         describe('#convert', () => {
             let forexService;
             beforeEach(() => {
-                forexService = new Forex(currencies);
+                forexService = new Forex(new ForexRepositoryMock(), currencies);
             });
             it('should convert and round output value', async () => {
                 const eurRate = 2;
@@ -111,7 +120,7 @@ describe('Forex test suite', () => {
         describe('#getRate', () => {
             let forexService;
             beforeEach(() => {
-                forexService = new Forex(currencies);
+                forexService = new Forex(new ForexRepositoryMock(), currencies);
             });
             it('should return null for unknown value', async () => {
                 const rate = await forexService.getRate('zyx-xyz');
@@ -124,7 +133,8 @@ describe('Forex test suite', () => {
         commonTestCases(CachedForex);
         describe('cache specific cases', () => {
             beforeEach(() => {
-                forexService = new CachedForex(currencies);
+                forexService = new CachedForex(new ForexRepositoryMock(),
+                    currencies);
                 sinon.spy(forexService.forexRepository, 'getRate');
             });
             afterEach(() => {
