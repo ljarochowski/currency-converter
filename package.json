@@ -9,7 +9,9 @@
   },
   "scripts": {
     "test": "mocha",
-    "build": "./scripts/build.sh"
+    "build": "./scripts/build.sh",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix --ext js ."
   },
   "repository": {
     "type": "git",
